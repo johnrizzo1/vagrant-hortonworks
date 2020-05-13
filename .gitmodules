@@ -1,6 +1,7 @@
 [submodule "ansible"]
 	path = ansible
-	url = https://github.com/johnrizzo1/ansible-hortonworks.git
+	url = ssh://git@github.com/johnrizzo1/ansible-hortonworks.git
+	branch = vagrant_integration
 [submodule "ansible-hortonworks"]
 	path = ansible-hortonworks
 	url = ssh://git@github.com/johnrizzo1/ansible-hortonworks.git
