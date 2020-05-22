@@ -35,11 +35,11 @@ puts "Running with ansible-skip-tags: #{ansible_skip_tags.split(',').to_s}" if a
 # Host Configuration
 hosts = [
   {
-    hostname: 'master01',
+    hostname: 'master01.example.com',
     ip: '192.168.0.2',
     # memory: '16384',
     memory: '24576',
-    cpus: 8,
+    cpus: 4,
     promisc: 2,  # enables promisc on the 'Nth' network interface
     disksize: 100
   # }, {
@@ -55,9 +55,10 @@ hosts = [
 #
 # Vagrant Configuration
 Vagrant.configure('2') do |config|
+  config.vm.box = 'centos/7'
   # config.vm.box = 'ubuntu/bionic64' # 18.04 LTS
-  config.vm.box = 'ubuntu/xenial64' # 16.04 LTS
-  config.vm.box_check_update = false
+  # config.vm.box = 'ubuntu/xenial64' # 16.04 LTS
+  config.vm.box_check_update = true
   # config.ssh.insert_key = true
   config.ssh.insert_key = false
 
@@ -66,15 +67,17 @@ Vagrant.configure('2') do |config|
   config.hostmanager.manage_host = true
 
   # enable vagrant cachier if present
-  if Vagrant.has_plugin?('vagrant-cachier')
-    config.cache.enable :apt
-    config.cache.scope = :box
+  # if Vagrant.has_plugin?('vagrant-cachier')
+    # config.cache.enable :apt
+    # config.cache.enable :yum, :gem
+    # config.cache.scope = :box
+    # config.cache.scope = :machine
 
-    config.cache.synced_folder_opts = {
-      type: :nfs,
-      mount_options: ['rw', 'vers=3', 'tcp', 'nolock']
-    }
-  end
+    # config.cache.synced_folder_opts = {
+      # type: :nfs,
+      # mount_options: ['rw', 'vers=3', 'tcp', 'nolock']
+    # }
+  # end
 
   # host definition
   hosts.each_with_index do |host, index|
@@ -97,6 +100,10 @@ Vagrant.configure('2') do |config|
         vb.linked_clone = true if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('1.8.0')
       end
 
+      # node.vm.provision :shell, inline: <<-SCRIPT
+# apt-get update -y && apt-get upgrade -y && apt-get install -y libsnappy1v5
+# SCRIPT
+
       if index == hosts.length - 1
         # provision the host with ansible
         node.vm.provision :ansible do |ansible|
@@ -113,10 +120,10 @@ Vagrant.configure('2') do |config|
 
           # ansible.inventory_path     = 'ansible/inventory/static'
           ansible.groups = {
-            'hdp-master' => ['master01'],
-            # 'hdp-slave' => ['slave01'],
-            # 'hadoop-cluster' => ['master01', 'slave01'],
-            'hdp-singlenode' => ['master01'],
+            'hdp-master' => ['master01.example.com'],
+            # 'hdp-slave' => ['slave01.example.com'],
+            # 'hadoop-cluster' => ['master01.example.com', 'slave01.example.com'],
+            'hdp-singlenode' => ['master01.example.com'],
             # 'mytestcluster:children' => ['hdp-master', 'hdp-slave'],
             'mytestcluster:children' => ['hdp-singlenode'],
             'all:vars' => {
